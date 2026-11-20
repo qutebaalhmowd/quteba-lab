@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2e7d32">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>Quteba Lab</title>
+<style>
+body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:12px;background:#f4f6f8;color:#222}
+.box{max-width:900px;margin:auto;background:#fff;padding:16px;border-radius:8px}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px}
+.info label{font-size:13px;display:block}
+input,select{font-family:inherit}
+.info input,.info select{width:100%;padding:6px;box-sizing:border-box;font-size:15px}
+.top{display:flex;gap:8px;margin-bottom:10px}
+.top button{flex:1;margin:0;padding:10px 4px;font-size:15px;border:none;border-radius:6px;color:#fff;background:#555}
+.top .b1{background:#2e7d32}
+#pnl,#set{display:none;border:1px solid #b9d6b9;background:#f3f9f3;border-radius:6px;padding:8px;margin-bottom:12px}
+#set{background:#f7f5ee;border-color:#d8cfa8}
+#q,#sq{width:100%;box-sizing:border-box;padding:10px;font-size:16px;margin-bottom:6px}
+#pl,#sl{max-height:55vh;overflow:auto}
+details{background:#fff;border:1px solid #cde0cd;border-radius:6px;margin-bottom:6px;padding:6px 8px}
+summary{font-weight:bold;font-size:15px;cursor:pointer;padding:4px 0}
+#pnl label{display:block;padding:6px 0;font-size:15px}
+#pnl label.all{color:#2e7d32;font-weight:bold;border-bottom:1px dashed #ccc}
+#pnl input[type=checkbox]{width:20px;height:20px;vertical-align:middle;margin-left:8px}
+.bar{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.bar button{flex:1;margin:0;padding:10px 6px;font-size:15px}
+.add{background:#1565c0;color:#fff;border:none;border-radius:6px}
+.ed{border-bottom:1px solid #eee;padding:8px 0;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px}
+.ed b{grid-column:1/3;font-size:14px}
+.ed input,.ed select{width:100%;box-sizing:border-box;padding:5px;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid #ccc;padding:5px;text-align:center}
+th{background:#e8eef5}
+td.g{background:#dde8f3;font-weight:bold;text-align:right}
+td input,td select{width:80px;padding:4px;font-size:15px;text-align:center}
+td input.tx,td select{width:115px}
+td.pc input{width:80px}
+.H{color:#c00;font-weight:bold}
+.L{color:#d60;font-weight:bold}
+.N{color:#080}
+.tot{margin-top:12px;padding:10px;background:#fff8e1;border:1px solid #e0c060;border-radius:6px;font-size:17px;font-weight:bold;text-align:center}
+.tot input{width:70px;padding:3px;text-align:center;font-size:15px}
+button{padding:10px 18px;font-size:16px;margin:12px 4px 0;cursor:pointer}
+.x{padding:2px 8px;margin:0;font-size:14px}
+@media print{
+body{background:#fff;padding:0}
+.no{display:none!important}
+td input,td select{border:none;width:auto;background:none;-moz-appearance:textfield;appearance:none;-webkit-appearance:none}
+td input::-webkit-outer-spin-button,td input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.info input,.info select{border:none;appearance:none;-webkit-appearance:none;background:none}
+.tot input{border:none}
+body.hp .pc,body.hp .tot{display:none}
+}
+</style>
+</head>
+<body>
+<div class="box">
+<input id="lab" value="Quteba Lab" onchange="sl()" style="text-align:center;font-size:22px;font-weight:bold;border:none;width:100%;margin-bottom:12px">
+<div class="info">
+<div><label>اسم المريض</label><input id="pn"></div>
+<div><label>العمر</label><input id="age" type="number"></div>
+<div><label>الجنس</label><select id="sex" onchange="render()"><option value="m">ذكر</option><option value="f">أنثى</option></select></div>
+<div><label>التاريخ</label><input id="dt" type="date"></div>
+<div><label>الطبيب المحيل</label><input id="dr"></div>
+</div>
+<div class="top no">
+<button class="b1" onclick="tp()">＋ التحاليل</button>
+<button onclick="ts()">⚙ الإعدادات</button>
+</div>
+<div id="pnl" class="no">
+<input id="q" placeholder="🔍 ابحث عن تحليل (عربي أو إنجليزي)" oninput="fl()">
+<div id="pl"></div>
+<div class="bar">
+<button class="add" onclick="addSel()">إضافة المحدد</button>
+<button onclick="selVis()">تحديد نتائج البحث</button>
+<button onclick="tp()">إغلاق</button>
+</div>
+</div>
+<div id="set" class="no">
+<b>الإعدادات</b>
+<input id="sq" placeholder="🔍 ابحث لتعديل تحليل" oninput="rs()">
+<div id="sl"></div>
+<div class="bar">
+<button class="add" onclick="newT()">＋ تحليل جديد</button>
+<button onclick="ex()">حفظ نسخة احتياطية</button>
+<button onclick="document.getElementById('imf').click()">استعادة نسخة</button>
+<button onclick="ts()">إغلاق</button>
+</div>
+<input type="file" id="imf" accept=".json" style="display:none" onchange="im(this)">
+<div style="font-size:12px;color:#777;margin-top:6px">صيغة المدى: 4-11 للرقم، أو m:13-17,f:12-15 حسب الجنس، أو t:سلبي/إيجابي لقائمة (الأول هو الطبيعي)، أو d:أ/ب/ج لقائمة بلا حكم، أو اتركها فارغة.</div>
+</div>
+<table>
+<thead><tr><th>التحليل</th><th>النتيجة</th><th>الوحدة</th><th>المدى الطبيعي</th><th>الحالة</th><th class="pc">السعر</th><th class="no"></th></tr></thead>
+<tbody id="tb"></tbody>
+</table>
+<div class="tot">عدد التحاليل: <span id="cnt">0</span> &nbsp;|&nbsp; الإجمالي: <span id="tot">0</span> <input id="cur" placeholder="العملة" oninput="sc()"></div>
+<div style="text-align:center" class="no">
+<label><input type="checkbox" id="shp" checked onchange="hp()"> إظهار الأسعار في الطباعة</label><br>
+<button onclick="window.print()">طباعة التقرير</button>
+<button onclick="clr()">مريض جديد</button>
+</div>
+</div>
+<script>
+const DEF=[
+["صورة الدم الكاملة CBC",[
+"WBC|كريات الدم البيضاء WBC|x10³/µL|4-11|35000",
+"NEUT|العدلات Neutrophils|%|40-70|0",
+"LYM|اللمفاويات Lymphocytes|%|20-40|0",
+"MONO|وحيدات النواة Monocytes|%|2-8|0",
+"EOS|الحمضات Eosinophils|%|1-4|0",
+"BASO|القعدات Basophils|%|0-1|0",
+"RBC|كريات الدم الحمراء RBC|x10⁶/µL|m:4.5-5.9,f:4.1-5.1|0",
+"Hb|الهيموغلوبين Hb|g/dL|m:13.5-17.5,f:12-15.5|0",
+"HCT|الهيماتوكريت HCT|%|m:41-53,f:36-46|0",
+"MCV|MCV|fL|80-100|0",
+"MCH|MCH|pg|27-33|0",
+"MCHC|MCHC|g/dL|32-36|0",
+"PLT|الصفائح الدموية PLT|x10³/µL|150-450|0"]],
+["الدم والتخثر والزمر",[
+"HBX|الخضاب Hb (منفرد)|g/dL|m:13.5-17.5,f:12-15.5|20000",
+"ABO|الزمرة الدموية||d:A+/A-/B+/B-/AB+/AB-/O+/O-|15000",
+"RETIC|الشبكيات Reticulocytes|%|0.5-2.5|15000",
+"ESR|سرعة التثفل ESR|mm/hr|m:0-15,f:0-20|15000",
+"SMEAR|لطاخة دموية||t|30000",
+"BT|زمن النزف|min|2-7|10000",
+"CT|زمن التخثر|min|4-10|10000",
+"PT|زمن البروثرومبين PT|sec|11-13.5|20000",
+"PTTK|PTTK|sec|25-35|30000",
+"FIB|فيبرونوجين Fibrinogen|mg/dL|200-400|40000",
+"DDIM|D-Dimer|mg/L|0-0.5|140000",
+"HBEL|رحلان الخضاب Hb Electrophoresis||t|120000",
+"CMD|كومبس مباشر||t:سلبي/إيجابي|30000",
+"CMI|كومبس غير مباشر||t:سلبي/إيجابي|40000",
+"XM|تصالب الدم على الهلام||t:متوافق/غير متوافق|30000"]],
+["السكر",[
+"FBS|سكر|mg/dL|70-100|10000",
+"HbA1c|السكر التراكمي HbA1c|%|4-5.6|70000",
+"INS|إنسولين Insulin|µIU/mL|2.6-24.9|100000",
+"CPEP|C-Peptide|ng/mL|0.8-3.5|120000"]],
+["الدهون",[
+"CHOL|كولسترول كلي|mg/dL|0-200|15000",
+"TG|شحوم ثلاثية TG|mg/dL|0-150|25000",
+"HDL|كولسترول HDL|mg/dL|40-100|35000",
+"LDL|كولسترول LDL|mg/dL|0-130|35000"]],
+["الكبد والإنزيمات",[
+"ALT|SGPT (ALT)|U/L|7-56|15000",
+"AST|SGOT (AST)|U/L|10-40|15000",
+"ALP|فوسفاتاز قلوية ALP|U/L|44-147|15000",
+"TBIL|بيليروبين|mg/dL|0.1-1.2|25000",
+"ALB|ألبومين|g/dL|3.5-5|15000",
+"TP|بروتين كلي|g/dL|6-8.3|25000",
+"GGT|GGT|U/L|m:8-61,f:5-36|35000",
+"AMY|أميالاز|U/L|28-100|25000",
+"LIP|ليباز|U/L|0-160|50000",
+"LDH|LDH|U/L|140-280|25000",
+"CPK|CPK|U/L|m:39-308,f:26-192|35000",
+"TROP|تروبونين I|ng/mL|0-0.04|100000"]],
+["الكلى والأملاح والمعادن",[
+"UREA|بولة|mg/dL|15-45|15000",
+"CREA|كرياتينين|mg/dL|m:0.7-1.3,f:0.6-1.1|15000",
+"UA|حمض البول|mg/dL|m:3.4-7,f:2.4-6|15000",
+"Na|صوديوم|mmol/L|135-145|20000",
+"K|بوتاسيوم|mmol/L|3.5-5.1|20000",
+"Ca|كالسيوم|mg/dL|8.5-10.5|20000",
+"CL|كلور|mmol/L|98-107|20000",
+"MG|مغنيزيوم|mg/dL|1.7-2.2|35000",
+"PHOS|فوسفور|mg/dL|2.5-4.5|20000",
+"HCO3|بيكربونات HCO3|mmol/L|22-29|50000",
+"CAI|كالسيوم شاردي|mmol/L|1.12-1.32|30000",
+"FE|حديد المصل|µg/dL|m:65-175,f:50-170|25000",
+"TIBC|السعة الرابطة للحديد|µg/dL|250-450|35000",
+"ZN|زنك|µg/dL|70-120|50000",
+"CU|نحاس المصل|µg/dL|m:70-140,f:80-155|60000",
+"NH3|أمونيا|µmol/L|15-45|85000",
+"ABG|غازات دم شرياني||t|250000"]],
+["الغدة الدرقية والجار درقية",[
+"TSH|TSH|mIU/L|0.4-4|65000",
+"FT4|FT4|ng/dL|0.8-1.8|70000",
+"FT3|FT3|pg/mL|2.3-4.2|70000",
+"T4|T4|µg/dL|5-12|70000",
+"T3|T3|ng/dL|80-200|70000",
+"TPO|Anti TPO|IU/mL|0-35|100000",
+"PTH|PTH|pg/mL|15-65|100000"]],
+["الهرمونات",[
+"FSH|FSH|mIU/mL||70000",
+"LH|LH|mIU/mL||70000",
+"PRL|Prolactin|ng/mL|m:4-15,f:4-25|70000",
+"BHCG|حمل بالدم HCG-B|mIU/mL||70000",
+"TESTO|Testosterone|ng/dL|m:270-1070,f:15-70|85000",
+"E2P|Estradiol / Progesterone|||70000",
+"CORT|Cortisol (صباحًا)|µg/dL|6-23|70000",
+"ACTH|ACTH|pg/mL|7-63|100000",
+"AMH|AMH|ng/mL||175000",
+"GH|هرمون النمو GH|ng/mL|0-5|100000",
+"DHEAS|DHEAs|µg/dL||70000",
+"IGF1|IGF-1|ng/mL||140000",
+"OHP|17-OH Progesterone|ng/mL||100000"]],
+["فيتامينات",[
+"FERR|Ferritin|ng/mL|m:24-336,f:11-307|85000",
+"B12|Vitamin B12|pg/mL|200-900|100000",
+"VITD|Vitamin D|ng/mL|30-100|140000"]],
+["دلالات الأورام",[
+"AFP|Alpha Fetoprotein|ng/mL|0-10|70000",
+"CA153|CA 15.3|U/mL|0-30|100000",
+"CA199|CA 19.9|U/mL|0-37|100000",
+"CA125|CA 125|U/mL|0-35|100000",
+"CEA|CEA|ng/mL|0-5|100000",
+"PSAT|PSA Total|ng/mL|0-4|100000",
+"PSAF|PSA Free|ng/mL||100000"]],
+["المناعة والالتهاب",[
+"CRP|CRP رقمي|mg/L|0-5|25000",
+"ASLO|ASLO|IU/mL|0-200|25000",
+"RF|RF رقمي|IU/mL|0-14|25000",
+"C3|Complement C3|mg/dL|90-180|45000",
+"C4|Complement C4|mg/dL|10-40|45000",
+"IGE|IgE|IU/mL|0-100|70000",
+"IGAMG|IgA + IgM + IgG|mg/dL||50000",
+"ANA|ANA||t:سلبي/إيجابي|70000",
+"DSDNA|Anti DNA.ds||t:سلبي/إيجابي|70000",
+"ACCP|ACCP|U/mL|0-20|140000",
+"LUPUS|LUPUS||t:سلبي/إيجابي|70000",
+"ACLG|Anti Cardiolipin IgG||t:سلبي/إيجابي|100000",
+"ACLM|Anti Cardiolipin IgM||t:سلبي/إيجابي|100000",
+"APLG|Anti phospholipid IgG||t:سلبي/إيجابي|100000",
+"APLM|Anti phospholipid IgM||t:سلبي/إيجابي|100000",
+"TTG|Transglutaminase IgA||t:سلبي/إيجابي|100000",
+"DGP|DGP Screen & IgG||t:سلبي/إيجابي|100000",
+"PCT|Procalcitonin PCT|ng/mL|0-0.5|170000"]],
+["المصلية والجرثومية",[
+"WIDAL|فيدال||t:سلبي/إيجابي|25000",
+"WRIGHT|رايت||t:سلبي/إيجابي|25000",
+"WRME2|رايت ME2||t:سلبي/إيجابي|25000",
+"HPYE|H. pylori Ab (ELISA)||t:سلبي/إيجابي|140000",
+"HPYI|H. pylori Ab (ICT)||t:سلبي/إيجابي|40000",
+"HBSI|HBs Ag (ICT)||t:سلبي/إيجابي|30000",
+"HBSE|HBs Ag (ELISA)||t:سلبي/إيجابي|70000",
+"HCVI|HCV Ab (ICT)||t:سلبي/إيجابي|30000",
+"HCVE|HCV Ab (ELISA)||t:سلبي/إيجابي|10000",
+"HIV|HIV (ICT)||t:سلبي/إيجابي|30000",
+"TOXG|Toxoplasma IgG||t:سلبي/إيجابي|70000",
+"TOXM|Toxoplasma IgM||t:سلبي/إيجابي|0",
+"CMVG|CMV IgG||t:سلبي/إيجابي|100000",
+"CMVM|CMV IgM||t:سلبي/إيجابي|100000",
+"RUBG|Rubella Ab IgG||t:سلبي/إيجابي|70000",
+"RUBM|Rubella Ab IgM||t:سلبي/إيجابي|70000",
+"CHLG|Chlamydia Ab IgG||t:سلبي/إيجابي|100000",
+"HAVM|HAV IgM||t:سلبي/إيجابي|100000",
+"HYD|الكيسة المائية||t:سلبي/إيجابي|100000",
+"TBS|تفاعل السلين الجلدي||t:سلبي/إيجابي|55000",
+"TBI|تفاعل السلين ICT||t:سلبي/إيجابي|50000"]],
+["البول",[
+"UCOL|اللون (فحص بول وراسب)||d:أصفر فاتح/أصفر/أصفر غامق/برتقالي/أحمر/بني|15000",
+"UAPP|الشفافية||t:رائق/عكر قليلاً/عكر|0",
+"USG|الوزن النوعي||1.005-1.03|0",
+"UPH|pH||4.5-8|0",
+"UPRO|البروتين||t:سلبي/أثر/+/++/+++|0",
+"UGLU|الجلوكوز||t:سلبي/أثر/+/++/+++|0",
+"UKET|الكيتون||t:سلبي/+/++/+++|0",
+"UBLD|الدم||t:سلبي/+/++/+++|0",
+"UBIL|البيليروبين||t:سلبي/إيجابي|0",
+"UURO|اليوروبيلينوجين||t:طبيعي/مرتفع|0",
+"UNIT|النتريت||t:سلبي/إيجابي|0",
+"ULEU|الكريات البيض (راسب)|/HPF|t|0",
+"URBC|الكريات الحمراء (راسب)|/HPF|t|0",
+"UEPI|الخلايا الطلائية||t|0",
+"UCRY|البلورات||t:لا يوجد/يوجد|0",
+"UCAST|الأسطوانات||t:لا يوجد/يوجد|0",
+"UPROT|بروتين البول 24 ساعة|mg/24h|0-150|15000",
+"UPREG|الحمل الحيوي (بول)||t:سلبي/إيجابي|15000"]],
+["البراز",[
+"SCOL|اللون (فحص البراز)||d:بني/أخضر/أصفر/أسود/أحمر|15000",
+"SCON|القوام||d:متشكل/لين/سائل/صلب|0",
+"SMUC|المخاط||t:لا يوجد/يوجد|0",
+"SPAR|الطفيليات||t:لا يوجد/يوجد|0",
+"SOVA|البيوض والكيسات||t:لا يوجد/يوجد|0",
+"SPUS|الخلايا الصديدية|/HPF|t|0",
+"SRBC|الكريات الحمراء|/HPF|t|0",
+"SOB|الدم الخفي بالبراز||t:سلبي/إيجابي|35000",
+"SCAL|كالبروتكتين Calprotectin|µg/g|0-50|145000",
+"HPAG|H. pylori Ag (معايرة بالبراز)||t:سلبي/إيجابي|145000",
+"HPST|Helicobacter Pylori||t:سلبي/إيجابي|40000"]],
+["السوائل والمني والزرع",[
+"CSFA|مظهر CSF||d:رائق/عكر/دموي/مصفر|50000",
+"CSFC|عدد الكريات CSF|/µL|0-5|0",
+"CSFP|بروتين CSF|mg/dL|15-45|0",
+"CSFG|جلوكوز CSF|mg/dL|40-70|0",
+"CSFL|كلوريد CSF|mmol/L|118-132|0",
+"SEMV|السائل المنوي: الحجم|mL|1.5-6|35000",
+"SEMC|السائل المنوي: التعداد|million/mL|15-300|0",
+"SEMM|السائل المنوي: الحركة التقدمية|%|32-100|0",
+"SEMF|السائل المنوي: الأشكال الطبيعية|%|4-100|0",
+"SEMFR|الفركتوز في السائل المنوي||t:موجود/غائب|35000",
+"CULT|الزرع الجرثومي||t:لا نمو/نمو جرثومي|45000",
+"SPUT|فحص القشع||t|50000"]]
+];
+const $=id=>document.getElementById(id);
+function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function pr(s){
+s=(s||'').trim();
+if(!s)return null;
+if(s[0]==='d'&&s[1]===':'){return{t:1,d:1,o:s.slice(2).split('/').filter(Boolean)};}
+if(s[0]==='t'){const o=s.slice(2).split('/').filter(Boolean);return{t:1,o:o,n:o[0]||''};}
+const rr=x=>x.split('-').map(Number);
+if(s.indexOf('m:')===0){const o={};s.split(',').forEach(q=>{o[q[0]]=rr(q.slice(2));});return o;}
+return rr(s);
+}
+function loadDB(){
+let d=null;
+try{d=JSON.parse(localStorage.getItem('qdb')||'null');}catch(e){}
+if(d&&d.g&&d.t)return d;
+d={g:[],t:[]};
+DEF.forEach((g,gi)=>{d.g.push(g[0]);g[1].forEach(s=>{const a=s.split('|');d.t.push({c:a[0],n:a[1],u:a[2]||'',r:a[3]||'',p:+a[4]||0,g:gi});});});
+return d;
+}
+let DB=loadDB();
+function svDB(){try{localStorage.setItem('qdb',JSON.stringify(DB));}catch(e){alert('تعذر الحفظ');}}
+function sl(){try{localStorage.setItem('qlab',$('lab').value);}catch(e){}}
+let sel=new Set(),V={};
+function buildPick(){
+let h='';
+DB.g.forEach((g,gi)=>{
+h+='<details data-g="'+gi+'"'+(gi===0?' open':'')+'><summary>'+esc(g)+'</summary>';
+h+='<label class="all"><input type="checkbox" class="ga" onchange="tg('+gi+',this.checked)"> تحديد الكل</label>';
+DB.t.forEach((t,i)=>{if(t.g===gi)h+='<label class="it" data-s="'+esc((t.n+' '+t.c).toLowerCase())+'"><input type="checkbox" class="c" data-g="'+gi+'" value="'+i+'"> '+esc(t.n)+'</label>';});
+h+='</details>';
+});
+$('pl').innerHTML=h;
+}
+function tp(){const p=$('pnl');const o=p.style.display==='block';p.style.display=o?'none':'block';$('set').style.display='none';if(!o){buildPick();$('q').focus();}}
+function tg(gi,on){document.querySelectorAll('.c[data-g="'+gi+'"]').forEach(e=>{if(e.parentNode.style.display!=='none')e.checked=on;});}
+function fl(){
+const q=$('q').value.trim().toLowerCase();
+document.querySelectorAll('#pl details').forEach(d=>{
+let k=0;
+d.querySelectorAll('.it').forEach(l=>{const m=!q||l.dataset.s.indexOf(q)>-1;l.style.display=m?'':'none';if(m)k++;});
+d.style.display=k?'':'none';
+d.querySelector('.all').style.display=q?'none':'';
+d.open=q?true:d.dataset.g==='0';
+});
+}
+function selVis(){document.querySelectorAll('#pl .it').forEach(l=>{if(l.style.display!=='none'&&l.parentNode.style.display!=='none')l.querySelector('input').checked=true;});}
+function addSel(){
+document.querySelectorAll('.c:checked').forEach(e=>{sel.add(+e.value);});
+$('q').value='';
+$('pnl').style.display='none';
+render();
+}
+function rm(i){sel.delete(i);delete V[i];render();}
+function rg(t){const r=pr(t.r);if(!r||r.t)return null;return Array.isArray(r)?r:r[$('sex').value];}
+function stat(i){
+const t=DB.t[i],s=$('s'+i),v=V[i],p=pr(t.r),r=rg(t);
+let rt='—';
+if(p&&p.t)rt=p.n||'—';else if(r)rt=r[0]+' - '+r[1];
+$('r'+i).textContent=rt;
+s.textContent='';s.className='';
+if(v===undefined||v==='')return;
+if(p&&p.t){
+if(!p.n)return;
+if(String(v).trim()===p.n){s.textContent='طبيعي';s.className='N';}else{s.textContent='غير طبيعي';s.className='H';}
+return;}
+if(!r)return;
+const x=parseFloat(v);
+if(x>r[1]){s.textContent='مرتفع ▲';s.className='H';}
+else if(x<r[0]){s.textContent='منخفض ▼';s.className='L';}
+else{s.textContent='طبيعي';s.className='N';}
+}
+function setv(i,v){V[i]=v;stat(i);}
+function tot(){
+let s=0;
+sel.forEach(i=>{s+=parseFloat(DB.t[i].p)||0;});
+$('cnt').textContent=sel.size;
+$('tot').textContent=s.toLocaleString('en-US');
+}
+function setp(i,v){DB.t[i].p=parseFloat(v)||0;svDB();tot();}
+function sc(){try{localStorage.setItem('qcur',$('cur').value);}catch(e){}}
+function cell(i){
+const t=DB.t[i],p=pr(t.r),v=V[i]!==undefined?V[i]:'';
+if(p&&p.t&&p.o.length){
+let o='<option value=""></option>';
+p.o.forEach(x=>{o+='<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>';});
+return '<select onchange="setv('+i+',this.value)">'+o+'</select>';
+}
+if(p&&p.t)return '<input type="text" class="tx" value="'+esc(v)+'" oninput="setv('+i+',this.value)">';
+return '<input type="number" step="any" value="'+esc(v)+'" oninput="setv('+i+',this.value)">';
+}
+function render(){
+let h='';
+DB.g.forEach((g,gi)=>{
+const items=[];
+DB.t.forEach((t,i)=>{if(t.g===gi&&sel.has(i))items.push(i);});
+if(!items.length)return;
+h+='<tr><td class="g" colspan="7">'+esc(g)+'</td></tr>';
+items.forEach(i=>{
+const t=DB.t[i];
+h+='<tr><td>'+esc(t.n)+'</td><td>'+cell(i)+'</td><td>'+esc(t.u)+'</td><td id="r'+i+'"></td><td id="s'+i+'"></td><td class="pc"><input type="number" step="any" min="0" value="'+esc(t.p)+'" oninput="setp('+i+',this.value)"></td><td class="no"><button class="x" onclick="rm('+i+')">✕</button></td></tr>';
+});});
+if(!h)h='<tr class="no"><td colspan="7">اضغط (التحاليل) لإضافة التحاليل</td></tr>';
+$('tb').innerHTML=h;
+sel.forEach(i=>stat(i));
+tot();
+}
+function hp(){document.body.classList.toggle('hp',!$('shp').checked);}
+function clr(){
+if(!confirm('بدء مريض جديد؟'))return;
+sel.clear();V={};
+['pn','age','dr'].forEach(k=>{$(k).value='';});
+render();
+}
+function ts(){const p=$('set');const o=p.style.display==='block';p.style.display=o?'none':'block';$('pnl').style.display='none';if(!o)rs();}
+function rs(){
+const q=$('sq').value.trim().toLowerCase();
+let h='';
+DB.t.forEach((t,i)=>{
+if(q&&(t.n+' '+t.c).toLowerCase().indexOf(q)<0)return;
+let go='';DB.g.forEach((g,gi)=>{go+='<option value="'+gi+'"'+(gi===t.g?' selected':'')+'>'+esc(g)+'</option>';});
+h+='<div class="ed"><b>'+esc(t.n)+'</b>'
++'<div>الاسم<input value="'+esc(t.n)+'" onchange="up('+i+',\'n\',this.value)"></div>'
++'<div>الوحدة<input value="'+esc(t.u)+'" onchange="up('+i+',\'u\',this.value)"></div>'
++'<div>السعر<input type="number" value="'+esc(t.p)+'" onchange="up('+i+',\'p\',this.value)"></div>'
++'<div>المجموعة<select onchange="up('+i+',\'g\',this.value)">'+go+'</select></div>'
++'<div style="grid-column:1/3">المدى / الخيارات<input value="'+esc(t.r)+'" onchange="up('+i+',\'r\',this.value)"></div>'
++'<div style="grid-column:1/3"><button class="x" onclick="del('+i+')">🗑 حذف هذا التحليل</button></div></div>';
+});
+$('sl').innerHTML=h||'لا نتائج';
+}
+function up(i,k,v){
+if(k==='p')v=parseFloat(v)||0;
+if(k==='g')v=+v;
+DB.t[i][k]=v;svDB();render();
+}
+function del(i){
+if(!confirm('حذف هذا التحليل؟'))return;
+DB.t.splice(i,1);
+const ns=new Set(),nv={};
+sel.forEach(x=>{if(x<i)ns.add(x);else if(x>i)ns.add(x-1);});
+Object.keys(V).forEach(k=>{k=+k;if(k<i)nv[k]=V[k];else if(k>i)nv[k-1]=V[k];});
+sel=ns;V=nv;svDB();rs();render();
+}
+function newT(){
+const n=prompt('اسم التحليل الجديد:');
+if(!n)return;
+DB.t.push({c:'X'+Date.now(),n:n,u:'',r:'',p:0,g:0});
+svDB();$('sq').value=n;rs();
+alert('أُضيف في أول مجموعة. عدّل مجموعته ومداه وسعره من البطاقة.');
+}
+function ex(){
+const b=new Blob([JSON.stringify({db:DB,cur:$('cur').value,lab:$('lab').value})],{type:'application/json'});
+const a=document.createElement('a');
+a.href=URL.createObjectURL(b);
+a.download='quteba-lab-backup-'+new Date().toISOString().slice(0,10)+'.json';
+a.click();
+}
+function im(f){
+const file=f.files[0];if(!file)return;
+const r=new FileReader();
+r.onload=()=>{
+try{
+const d=JSON.parse(r.result);
+if(!d.db||!d.db.t||!d.db.g)throw 0;
+if(!confirm('سيتم استبدال الإعدادات الحالية بالنسخة. متابعة؟'))return;
+DB=d.db;svDB();
+$('cur').value=d.cur||'';$('lab').value=d.lab||'Quteba Lab';sc();sl();
+sel.clear();V={};render();rs();
+alert('تمت الاستعادة');
+}catch(e){alert('ملف غير صالح');}
+};
+r.readAsText(file);
+f.value='';
+}
+try{
+const c=localStorage.getItem('qcur');
+$('cur').value=c!==null?c:'ل.س';
+const l=localStorage.getItem('qlab');
+if(l)$('lab').value=l;
+}catch(e){$('cur').value='ل.س';}
+$('dt').valueAsDate=new Date();
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>

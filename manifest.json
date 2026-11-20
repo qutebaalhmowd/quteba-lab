@@ -1,0 +1,14 @@
+{
+"name": "Quteba Lab",
+"short_name": "Quteba Lab",
+"start_url": "./index.html",
+"scope": "./",
+"display": "standalone",
+"background_color": "#ffffff",
+"theme_color": "#2e7d32",
+"lang": "ar",
+"dir": "rtl",
+"icons": [
+{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+]
+}
